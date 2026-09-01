@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Platform Engineering Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- HOME SCREEN -->
+  <div id="screen-home" class="screen active">
+    <div class="home-hero">
+      <div class="hero-icon">🚀</div>
+      <h1>Platform Engineering<br/><span>Quiz Hub</span></h1>
+      <p class="hero-sub">Test your knowledge across every lesson — 20 questions per topic, instant results with explanations.</p>
+    </div>
+    <div class="topic-grid" id="topic-grid"></div>
+    <footer class="home-footer">Based on the Platform Engineering Study Project · 14 Topics · 280 Questions</footer>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-header">
+      <button class="btn-back" id="btn-back">← Back</button>
+      <div class="quiz-title-wrap">
+        <span class="quiz-topic-badge" id="quiz-topic-badge"></span>
+        <h2 id="quiz-title"></h2>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+        <span class="progress-text" id="progress-text">1 / 20</span>
+      </div>
+    </div>
+
+    <div class="question-card" id="question-card">
+      <div class="q-number" id="q-number">Question 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options-list" id="options-list"></div>
+      <button class="btn-next" id="btn-next" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="screen-results" class="screen">
+    <div class="results-header">
+      <button class="btn-back" id="btn-results-back">← Choose Another Topic</button>
+      <h2>Quiz Complete!</h2>
+      <div class="score-circle-wrap">
+        <svg class="score-ring" viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="52"/>
+          <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52"
+            stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+        </svg>
+        <div class="score-text-inner">
+          <span class="score-num" id="score-num">0</span>
+          <span class="score-den" id="score-den">/20</span>
+        </div>
+      </div>
+      <div class="score-label" id="score-label"></div>
+    </div>
+
+    <div class="results-body">
+      <div class="results-tabs">
+        <button class="tab-btn active" id="tab-wrong" onclick="showTab('wrong')">❌ Incorrect <span id="wrong-count"></span></button>
+        <button class="tab-btn" id="tab-right" onclick="showTab('right')">✅ Correct <span id="right-count"></span></button>
+      </div>
+      <div id="results-list"></div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-retry" id="btn-retry">🔁 Retry This Topic</button>
+      <button class="btn-home" id="btn-home">🏠 All Topics</button>
+    </div>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
