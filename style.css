@@ -44,37 +44,21 @@ body {
 }
 
 .home-hero {
-  text-align: center;
-  margin-bottom: 56px;
+  margin-bottom: 40px;
 }
 
-.hero-icon {
-  font-size: 56px;
-  margin-bottom: 20px;
-  animation: float 3s ease-in-out infinite;
+.hero-banner {
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
-.home-hero h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.5px;
-}
-
-.home-hero h1 span { color: var(--accent); }
-
-.hero-sub {
-  margin-top: 16px;
-  font-size: 1.05rem;
-  color: var(--text-muted);
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
+.hero-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
 }
 
 .topic-grid {

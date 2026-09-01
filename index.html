@@ -11,9 +11,125 @@
   <!-- HOME SCREEN -->
   <div id="screen-home" class="screen active">
     <div class="home-hero">
-      <div class="hero-icon">🚀</div>
-      <h1>Platform Engineering<br/><span>Quiz Hub</span></h1>
-      <p class="hero-sub">Test your knowledge across every lesson — 20 questions per topic, instant results with explanations.</p>
+      <!-- HERO BANNER -->
+      <div class="hero-banner" aria-hidden="true">
+        <svg class="hero-svg" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Platform Engineering Quiz Hub">
+
+          <!-- Background gradient panel -->
+          <defs>
+            <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#0d1117"/>
+              <stop offset="100%" stop-color="#161b22"/>
+            </linearGradient>
+            <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#58a6ff" stop-opacity="0"/>
+              <stop offset="50%"  stop-color="#58a6ff" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#bc8cff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#58a6ff"/>
+              <stop offset="100%" stop-color="#bc8cff"/>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Background rect -->
+          <rect width="900" height="220" rx="16" fill="url(#bgGrad)" stroke="#30363d" stroke-width="1"/>
+
+          <!-- Decorative grid lines (subtle) -->
+          <g stroke="#30363d" stroke-width="0.5" opacity="0.4">
+            <line x1="0" y1="55"  x2="900" y2="55"/>
+            <line x1="0" y1="110" x2="900" y2="110"/>
+            <line x1="0" y1="165" x2="900" y2="165"/>
+            <line x1="225" y1="0" x2="225" y2="220"/>
+            <line x1="450" y1="0" x2="450" y2="220"/>
+            <line x1="675" y1="0" x2="675" y2="220"/>
+          </g>
+
+          <!-- Glow accent line across middle -->
+          <line x1="0" y1="110" x2="900" y2="110" stroke="url(#lineGrad)" stroke-width="1.5" opacity="0.6"/>
+
+          <!-- Left: big icon cluster -->
+          <!-- Gear / cog icon -->
+          <g transform="translate(72,110)" filter="url(#glow)">
+            <circle r="28" fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0.9"/>
+            <circle r="14" fill="none" stroke="#58a6ff" stroke-width="2" opacity="0.9"/>
+            <!-- gear teeth -->
+            <g stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" opacity="0.9">
+              <line x1="0"  y1="-28" x2="0"  y2="-34"/>
+              <line x1="0"  y1="28"  x2="0"  y2="34"/>
+              <line x1="-28" y1="0" x2="-34" y2="0"/>
+              <line x1="28"  y1="0" x2="34"  y2="0"/>
+              <line x1="-20" y1="-20" x2="-24" y2="-24"/>
+              <line x1="20"  y1="-20" x2="24"  y2="-24"/>
+              <line x1="-20" y1="20"  x2="-24" y2="24"/>
+              <line x1="20"  y1="20"  x2="24"  y2="24"/>
+            </g>
+            <!-- inner dot -->
+            <circle r="5" fill="#58a6ff" opacity="0.9"/>
+          </g>
+
+          <!-- Small floating icons right side -->
+          <!-- Docker whale-ish box -->
+          <g transform="translate(810,60)" opacity="0.55">
+            <rect x="-18" y="-12" width="36" height="24" rx="4" fill="none" stroke="#2496ed" stroke-width="2"/>
+            <line x1="-6" y1="-12" x2="-6" y2="12" stroke="#2496ed" stroke-width="1.5"/>
+            <line x1="6"  y1="-12" x2="6"  y2="12" stroke="#2496ed" stroke-width="1.5"/>
+            <line x1="-18" y1="0" x2="18" y2="0" stroke="#2496ed" stroke-width="1.5"/>
+          </g>
+
+          <!-- K8s hexagon -->
+          <g transform="translate(840,148)" opacity="0.55">
+            <polygon points="0,-20 17,-10 17,10 0,20 -17,10 -17,-10" fill="none" stroke="#326ce5" stroke-width="2"/>
+            <text x="0" y="6" text-anchor="middle" font-size="11" font-weight="700" fill="#326ce5">K8s</text>
+          </g>
+
+          <!-- Terraform diamond -->
+          <g transform="translate(790,155)" opacity="0.4">
+            <polygon points="0,-16 14,0 0,16 -14,0" fill="none" stroke="#7b42bc" stroke-width="2"/>
+          </g>
+
+          <!-- Rocket -->
+          <g transform="translate(822,108)" opacity="0.5">
+            <ellipse cx="0" cy="0" rx="6" ry="12" fill="none" stroke="#3fb950" stroke-width="2" transform="rotate(-45)"/>
+            <line x1="-4" y1="4" x2="-9" y2="9" stroke="#3fb950" stroke-width="2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Main title text -->
+          <text x="160" y="95"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            font-size="42" font-weight="800" letter-spacing="-1"
+            fill="url(#textGrad)" filter="url(#glow)">Platform Engineering</text>
+
+          <text x="162" y="148"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            font-size="42" font-weight="800" letter-spacing="-1"
+            fill="#e6edf3">Quiz Hub</text>
+
+          <!-- Subtitle -->
+          <text x="162" y="182"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            font-size="14" fill="#8b949e" letter-spacing="0.2">
+            14 topics · 280 questions · 20 min timer · instant explanations
+          </text>
+
+          <!-- Stats pills -->
+          <g transform="translate(162,198)">
+            <rect width="80" height="18" rx="9" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+            <text x="40" y="13" text-anchor="middle" font-size="10" font-weight="600" fill="#58a6ff">Beginner</text>
+
+            <rect x="88" width="96" height="18" rx="9" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+            <text x="136" y="13" text-anchor="middle" font-size="10" font-weight="600" fill="#3fb950">Intermediate</text>
+
+            <rect x="192" width="64" height="18" rx="9" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+            <text x="224" y="13" text-anchor="middle" font-size="10" font-weight="600" fill="#ff7b72">Expert</text>
+          </g>
+
+        </svg>
+      </div>
     </div>
 
     <!-- FILTER BAR -->
