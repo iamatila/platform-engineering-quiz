@@ -2,20 +2,30 @@
 // PLATFORM ENGINEERING QUIZ — APP LOGIC
 // ============================================================
 
+// ── Constants ─────────────────────────────────────────────────
+const QUIZ_DURATION = 20 * 60; // 20 minutes in seconds
+
 // ── State ────────────────────────────────────────────────────
-let currentTopic   = null;   // topic object
-let questions      = [];     // shuffled questions for this session
-let currentIndex   = 0;      // current question index
-let selectedOption = null;   // index of user's selected option
-let answered       = false;  // has the user answered the current question?
-let results        = [];     // { q, opts, answer, chosen, correct, explain }
-let bestScores     = {};     // topicId → best score, persisted in localStorage
+let currentTopic    = null;   // topic object
+let questions       = [];     // shuffled questions for this session
+let currentIndex    = 0;      // current question index
+let selectedOption  = null;   // index of user's selected option
+let answered        = false;  // has the user answered the current question?
+let results         = [];     // { q, opts, answer, chosen, correct, explain }
+let bestScores      = {};     // topicId → best score, persisted in localStorage
+let activeFilter    = 'All';  // current level filter
+
+// ── Timer state ───────────────────────────────────────────────
+let timerInterval   = null;
+let timeRemaining   = QUIZ_DURATION;
+let timeUsed        = 0;
 
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadBestScores();
   renderTopicGrid();
   bindButtons();
+  bindFilters();
 });
 
 // ── Persistence ──────────────────────────────────────────────
@@ -33,12 +43,33 @@ function saveBestScore(topicId, score) {
   }
 }
 
+// ── Filter ────────────────────────────────────────────────────
+function bindFilters() {
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      renderTopicGrid();
+    });
+  });
+}
+
 // ── Home Screen ───────────────────────────────────────────────
 function renderTopicGrid() {
   const grid = document.getElementById('topic-grid');
   grid.innerHTML = '';
 
-  TOPICS.forEach(topic => {
+  const filtered = activeFilter === 'All'
+    ? TOPICS
+    : TOPICS.filter(t => t.level === activeFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-filter-state">No topics found for "<strong>${activeFilter}</strong>".</div>`;
+    return;
+  }
+
+  filtered.forEach(topic => {
     const best = bestScores[topic.id] ?? null;
     const card = document.createElement('div');
     card.className = 'topic-card';
@@ -53,9 +84,9 @@ function renderTopicGrid() {
       <div class="topic-meta">
         <span>20 questions</span>
         <span class="dot">·</span>
-        <span>Multiple choice</span>
+        <span>20 min timer</span>
         <span class="dot">·</span>
-        <span>With explanations</span>
+        <span>Multiple choice</span>
       </div>
       <button class="start-btn">Start Quiz →</button>
     `;
@@ -72,13 +103,99 @@ function startQuiz(topic) {
   currentIndex  = 0;
   results       = [];
 
-  document.getElementById('quiz-topic-badge').textContent = topic.level;
+  document.getElementById('quiz-topic-badge').textContent      = topic.level;
   document.getElementById('quiz-topic-badge').style.color       = topic.color;
   document.getElementById('quiz-topic-badge').style.borderColor = topic.color;
-  document.getElementById('quiz-title').textContent = topic.title;
+  document.getElementById('quiz-title').textContent             = topic.title;
 
   showScreen('quiz');
+  startTimer();
   renderQuestion();
+}
+
+// ── Timer ─────────────────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  timeRemaining = QUIZ_DURATION;
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    updateTimerDisplay();
+
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      timeExpired();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timeUsed = QUIZ_DURATION - timeRemaining;
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(timeRemaining / 60);
+  const secs = timeRemaining % 60;
+  const display = `${mins}:${secs.toString().padStart(2, '0')}`;
+  document.getElementById('timer-text').textContent = display;
+
+  // Animate the ring
+  const circumference = 113.1;
+  const pct = timeRemaining / QUIZ_DURATION;
+  const offset = circumference * (1 - pct);
+  document.getElementById('timer-ring-fill').style.strokeDashoffset = offset;
+
+  // Colour: green → yellow (under 5min) → red (under 1min)
+  const fill = document.getElementById('timer-ring-fill');
+  const timerText = document.getElementById('timer-text');
+  if (timeRemaining <= 60) {
+    fill.style.stroke = '#f85149';
+    timerText.classList.add('timer-urgent');
+  } else if (timeRemaining <= 300) {
+    fill.style.stroke = '#e3b341';
+    timerText.classList.remove('timer-urgent');
+  } else {
+    fill.style.stroke = '#3fb950';
+    timerText.classList.remove('timer-urgent');
+  }
+}
+
+function timeExpired() {
+  // Auto-submit any unanswered question then go to results
+  // If mid-question without answering, record it as unanswered (wrong)
+  if (!answered && currentIndex < questions.length) {
+    const q = questions[currentIndex];
+    results.push({
+      q:       q.q,
+      opts:    q.opts,
+      answer:  q.answer,
+      chosen:  -1,
+      correct: false,
+      explain: q.explain
+    });
+  }
+  // Fill in any remaining questions as skipped
+  for (let i = results.length; i < questions.length; i++) {
+    const q = questions[i];
+    results.push({
+      q:       q.q,
+      opts:    q.opts,
+      answer:  q.answer,
+      chosen:  -1,
+      correct: false,
+      explain: q.explain
+    });
+  }
+  showResults();
+}
+
+function formatTimeTaken(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m === 0) return `${s}s`;
+  return `${m}m ${s}s`;
 }
 
 // ── Question Render ───────────────────────────────────────────
@@ -88,7 +205,7 @@ function renderQuestion() {
   answered       = false;
 
   // progress
-  const pct = ((currentIndex) / questions.length) * 100;
+  const pct = (currentIndex / questions.length) * 100;
   document.getElementById('progress-bar').style.width = pct + '%';
   document.getElementById('progress-text').textContent =
     `${currentIndex + 1} / ${questions.length}`;
@@ -121,7 +238,7 @@ function renderQuestion() {
 
   // next button
   const nextBtn = document.getElementById('btn-next');
-  nextBtn.disabled  = true;
+  nextBtn.disabled    = true;
   nextBtn.textContent =
     currentIndex === questions.length - 1 ? 'See Results →' : 'Next →';
 }
@@ -136,18 +253,11 @@ function selectOption(idx) {
   const list = document.getElementById('options-list');
   const btns = list.querySelectorAll('.option-btn');
 
-  // disable all
   btns.forEach(b => { b.disabled = true; });
 
   const isCorrect = (idx === q.answer);
-
-  // style the selected button
   btns[idx].classList.add(isCorrect ? 'correct' : 'wrong');
-
-  // always reveal the correct answer
-  if (!isCorrect) {
-    btns[q.answer].classList.add('correct');
-  }
+  if (!isCorrect) btns[q.answer].classList.add('correct');
 
   // explanation
   const explain = document.createElement('div');
@@ -155,14 +265,10 @@ function selectOption(idx) {
   explain.className = 'explanation-box' + (isCorrect ? '' : ' wrong');
   explain.innerHTML = `<strong>${isCorrect ? '✅ Correct!' : '❌ Incorrect.'}</strong> ${q.explain}`;
 
-  // insert before next button
   const nextBtn = document.getElementById('btn-next');
   nextBtn.parentNode.insertBefore(explain, nextBtn);
-
-  // enable next
   nextBtn.disabled = false;
 
-  // record result
   results.push({
     q:       q.q,
     opts:    q.opts,
@@ -179,6 +285,7 @@ function nextQuestion() {
 
   currentIndex++;
   if (currentIndex >= questions.length) {
+    stopTimer();
     showResults();
   } else {
     renderQuestion();
@@ -187,34 +294,39 @@ function nextQuestion() {
 
 // ── Results Screen ────────────────────────────────────────────
 function showResults() {
+  stopTimer();
   const score = results.filter(r => r.correct).length;
   saveBestScore(currentTopic.id, score);
-  renderTopicGrid(); // refresh best scores on home
+  renderTopicGrid();
 
-  // score ring animation
+  // score ring
   const total = questions.length;
   const pct   = score / total;
   const circumference = 326.7;
   const offset = circumference * (1 - pct);
   const ring = document.getElementById('ring-fill');
-  // colour by score
   const colour = pct >= 0.8 ? '#3fb950' : pct >= 0.5 ? '#e3b341' : '#f85149';
   ring.style.stroke = colour;
-  setTimeout(() => {
-    ring.style.strokeDashoffset = offset;
-  }, 100);
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
 
   document.getElementById('score-num').textContent = score;
   document.getElementById('score-den').textContent = `/${total}`;
 
   // label
   let label = '';
-  if      (pct === 1)    label = '🏆 Perfect score!';
-  else if (pct >= 0.8)   label = '🎉 Great work — you know this topic well!';
-  else if (pct >= 0.6)   label = '👍 Solid — review the ones you missed.';
-  else if (pct >= 0.4)   label = '📖 Keep studying — review the lesson slides.';
-  else                   label = '🔁 Revisit this lesson before retrying.';
+  if      (pct === 1)   label = '🏆 Perfect score!';
+  else if (pct >= 0.8)  label = '🎉 Great work — you know this topic well!';
+  else if (pct >= 0.6)  label = '👍 Solid — review the ones you missed.';
+  else if (pct >= 0.4)  label = '📖 Keep studying — review the lesson slides.';
+  else                  label = '🔁 Revisit this lesson before retrying.';
   document.getElementById('score-label').textContent = label;
+
+  // time taken
+  const taken = formatTimeTaken(timeUsed);
+  const timeLbl = document.getElementById('time-taken-label');
+  timeLbl.textContent = timeUsed >= QUIZ_DURATION
+    ? '⏰ Time ran out!'
+    : `⏱ Completed in ${taken}`;
 
   // counts
   const wrong = results.filter(r => !r.correct);
@@ -222,9 +334,7 @@ function showResults() {
   document.getElementById('wrong-count').textContent = wrong.length;
   document.getElementById('right-count').textContent = right.length;
 
-  // default to wrong tab (most useful)
   showTab('wrong');
-
   showScreen('results');
 }
 
@@ -251,13 +361,14 @@ function showTab(tab) {
 
   const letters = ['A', 'B', 'C', 'D'];
 
-  filtered.forEach((r, i) => {
+  filtered.forEach(r => {
     const item = document.createElement('div');
     item.className = `result-item ${r.correct ? 'correct' : 'wrong'}`;
 
     const qIdx = results.indexOf(r) + 1;
-    const yourAnswerText   = r.opts[r.chosen];
+    const yourAnswerText    = r.chosen === -1 ? '(not answered — time ran out)' : r.opts[r.chosen];
     const correctAnswerText = r.opts[r.answer];
+    const chosenLetter      = r.chosen === -1 ? '—' : letters[r.chosen];
 
     item.innerHTML = `
       <div class="result-q-num">Question ${qIdx}</div>
@@ -265,7 +376,7 @@ function showTab(tab) {
       <div class="result-answers">
         <div class="result-answer-row your-answer ${r.correct ? 'right' : 'wrong'}">
           <span class="result-answer-icon">${r.correct ? '✅' : '❌'}</span>
-          <span><span class="result-answer-label">Your answer:</span> ${letters[r.chosen]}. ${yourAnswerText}</span>
+          <span><span class="result-answer-label">Your answer:</span> ${chosenLetter}${r.chosen !== -1 ? '.' : ''} ${yourAnswerText}</span>
         </div>
         ${!r.correct ? `
         <div class="result-answer-row correct-answer">
@@ -286,6 +397,7 @@ function bindButtons() {
 
   document.getElementById('btn-back').addEventListener('click', () => {
     if (confirm('Leave this quiz? Your progress will be lost.')) {
+      stopTimer();
       showScreen('home');
     }
   });
